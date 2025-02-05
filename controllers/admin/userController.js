@@ -5,34 +5,29 @@ const { Op } = require("sequelize");
 // Add User
 const addUser = async (req, res) => {
     try {
-        const { email, name, password, class: userClass, school, parentname, parentemail, parentphone } = req.body;
+        const { email, name, password, class: userClass, school, parentname, parentemail, phone } = req.body;
 
         if (!email || !name || !password || !userClass || !parentemail) {
             return res.status(400).json({ message: "email, name, class, password, and parentemail are required" });
         }
-        // Check if user already exists
+
+        // Check if user exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(409).json({ message: "User already exists" });
         }
 
-        // Check if the parent exists, if not, create a new parent
+        // Check if the parent exists, if not, create one
         let parent = await Parent.findByPk(parentemail);
         if (!parent) {
-            if (!parentname || !parentphone) {
-                return res.status(400).json({ message: "Parent does not exist. Please provide parentname and parentPhone to create one." });
+            if (!parentname || !phone) {
+                return res.status(400).json({ message: "Parent does not exist. Please provide parentname and phone to create one." });
             }
-            parent = await Parent.create({
-                parentemail,
-                parentname: parentname,
-                phone: parentphone
-            });
+            parent = await Parent.create({ parentemail, parentname, phone });
         }
 
-        // Hash password before saving
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Profile picture path
         const profilePicPath = req.file ? `uploads/profile_pics/${req.file.filename}` : null;
 
         // Create User
@@ -48,15 +43,8 @@ const addUser = async (req, res) => {
 
         return res.status(201).json({
             message: "User added successfully",
-            user: { 
-                email: newUser.email, 
-                name: newUser.name, 
-                class: newUser.class, 
-                school: newUser.school, 
-                profile_pic: newUser.profile_pic, 
-                parentemail: newUser.parentemail
-            },
-            parent: parent // Returning parent details too
+            user: { email: newUser.email, name: newUser.name, class: newUser.class, school: newUser.school, profile_pic: newUser.profile_pic, parentemail: newUser.parentemail },
+            parent
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
@@ -67,7 +55,11 @@ const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
-            include: { model: Parent, attributes: ["parentname", "parentemail", "phone"] } // Fetch parent details
+            include: [{
+                model: Parent,
+                as: "Parents", // Match alias in associations
+                attributes: ["parentname", "parentemail", "phone"]
+            }]
         });
 
         return res.status(200).json({ message: "Users retrieved successfully", users });
@@ -75,7 +67,6 @@ const getAllUsers = async (req, res) => {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
 // Get User by Email
 const searchUser = async (req, res) => {
     try {
@@ -86,7 +77,6 @@ const searchUser = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const filters = {};
-
         if (email) filters.email = { [Op.iLike]: `%${email}%` };
         if (name) filters.name = { [Op.iLike]: `%${name}%` };
         if (userClass) filters.class = userClass;
@@ -96,7 +86,7 @@ const searchUser = async (req, res) => {
         const users = await User.findAll({
             where: filters,
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
-            include: { model: Parent, attributes: ["parentname", "parentemail", "phone"] },
+            include: { model: Parent, as: "Parents", attributes: ["parentname", "parentemail", "phone"] },
             limit,
             offset,
             order: [["createdAt", "DESC"]]
@@ -159,16 +149,27 @@ const updateUser = async (req, res) => {
 };
 
 // Delete User
+// Delete User
 const deleteUser = async (req, res) => {
     try {
-        const { parentemail } = req.params;
+        const { email } = req.params;
 
-        const user = await User.findOne({ where: { parentemail } });
+        // Find user by email
+        const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        // Count how many users are associated with this parent
+        const userCount = await User.count({ where: { parentemail: user.parentemail } });
 
+        // Delete the user
         await user.destroy();
+
+        // If this was the only user associated with the parent, delete the parent as well
+        if (userCount === 1) {
+            await Parent.destroy({ where: { parentemail: user.parentemail } });
+        }
+
         return res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });

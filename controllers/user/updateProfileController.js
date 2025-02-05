@@ -1,13 +1,9 @@
-const bcrypt = require("bcryptjs");
 const { User, Parent } = require("../../models/index");
 
 const updateProfile = async (req, res) => {
     try {
         const { email } = req.params;
-        const { name, class: userClass, school, parentname } = req.body;
-
-        console.log("Authenticated User:", req.user); // Debugging Log
-
+        const { name, class: userClass, school, parentemail } = req.body;
         // Ensure user can only update their own profile OR admin can update any profile
         if (req.user.email !== email && !req.user.isAdmin) {
             return res.status(403).json({ message: "Access denied. You can only update your own profile." });
@@ -20,8 +16,8 @@ const updateProfile = async (req, res) => {
         }
 
         // Validate parentname if provided
-        if (parentname) {
-            let parent = await Parent.findByPk(parentname);
+        if (parentemail) {
+            let parent = await Parent.findByPk(parentemail);
             if (!parent) {
                 return res.status(400).json({ message: "Parent not found. Provide valid parentname." });
             }
@@ -39,7 +35,7 @@ const updateProfile = async (req, res) => {
             class: userClass || user.class,
             school: school || user.school,
             profile_pic: profilePicPath,
-            parentname: parentname || user.parentname
+            parentemail: parentemail || user.parentemail,
         });
 
         return res.status(200).json({
@@ -50,7 +46,7 @@ const updateProfile = async (req, res) => {
                 class: user.class,
                 school: user.school,
                 profile_pic: user.profile_pic,
-                parentname: user.parentname
+                parentemail: user.parentemail
             }
         });
     } catch (error) {

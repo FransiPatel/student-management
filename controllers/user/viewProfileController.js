@@ -14,7 +14,11 @@ const viewProfile = async (req, res) => {
         const user = await User.findOne({
             where: { email },
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
-            include: { model: Parent, attributes: ["parentname", "parentemail", "phone"] } // Include parent details
+            include: [{
+                model: Parent,
+                as: "Parents", 
+                attributes: ["parentname", "parentemail", "phone"]
+            }] 
         });
 
         if (!user) {

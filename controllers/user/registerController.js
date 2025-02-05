@@ -9,7 +9,7 @@ const registerStudent = async (req, res) => {
 
         // Validate input
         if (!email || !name || !password || !userClass || !parentemail) {
-            return res.status(400).json({ message: "Email, name, class, password, and parentname are required" });
+            return res.status(400).json({ message: "Email, name, class, password, and parentemail are required" });
         }
         // Check if student already exists
         const existingUser = await User.findOne({ where: { email } });

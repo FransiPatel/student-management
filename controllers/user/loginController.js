@@ -16,7 +16,7 @@ const loginStudent = async (req, res) => {
         // Find student
         const student = await User.findOne({ where: { email } });
         if (!student) {
-            return res.status(404).json({ message: "Invalid email or password" });
+            return res.status(401).json({ message: "Invalid email or password" });
         }
 
         // Compare password
@@ -27,7 +27,7 @@ const loginStudent = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { id: student.email, name: student.name, parentId: student.parentId },
+            { id: student.email, name: student.name, parentemail: student.parentemail },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );

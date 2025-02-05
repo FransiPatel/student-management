@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
 // Initialize Sequelize
@@ -10,7 +10,7 @@ const sequelize = new Sequelize(
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
         dialect: "postgres",
-        logging: false, // Disable SQL logging in console
+        logging: false,
     }
 );
 
@@ -18,14 +18,8 @@ const sequelize = new Sequelize(
 const User = require("./userModel")(sequelize);
 const Parent = require("./parentModel")(sequelize);
 
-Parent.hasMany(User, {
-    foreignKey: "parentemail",
-    onDelete: "SET NULL"
-});
-
-User.belongsTo(Parent, {
-    foreignKey: "parentemail",
-    onDelete: "SET NULL"
-});
+// Define Associations
+User.belongsTo(Parent, { foreignKey: "parentemail", as: "Parents", onDelete: "SET NULL" });
+Parent.hasMany(User, { foreignKey: "parentemail", as: "Users" });
 
 module.exports = { sequelize, User, Parent };

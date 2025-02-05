@@ -10,9 +10,6 @@ const adminLogin = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
-        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-            return res.status(400).json({ message: "email format is not valid" });
-        }
         // Validate admin credentials
         if (email !== admin.email) {
             return res.status(401).json({ message: "Invalid email or password" });
