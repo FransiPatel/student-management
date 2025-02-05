@@ -4,7 +4,14 @@ const { User, Parent } = require("../../models/index");
 const updateProfile = async (req, res) => {
     try {
         const { email } = req.params;
-        const { name, class: userClass, school, parentId } = req.body;
+        const { name, class: userClass, school, parentname } = req.body;
+
+        console.log("Authenticated User:", req.user); // Debugging Log
+
+        // Ensure user can only update their own profile OR admin can update any profile
+        if (req.user.email !== email && !req.user.isAdmin) {
+            return res.status(403).json({ message: "Access denied. You can only update your own profile." });
+        }
 
         // Find user by email
         const user = await User.findOne({ where: { email } });
@@ -12,11 +19,11 @@ const updateProfile = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Validate parentId if provided
-        if (parentId) {
-            const parent = await Parent.findByPk(parentId);
+        // Validate parentname if provided
+        if (parentname) {
+            let parent = await Parent.findByPk(parentname);
             if (!parent) {
-                return res.status(404).json({ message: "Parent not found" });
+                return res.status(400).json({ message: "Parent not found. Provide valid parentname." });
             }
         }
 
@@ -32,7 +39,7 @@ const updateProfile = async (req, res) => {
             class: userClass || user.class,
             school: school || user.school,
             profile_pic: profilePicPath,
-            parentId: parentId || user.parentId
+            parentname: parentname || user.parentname
         });
 
         return res.status(200).json({
@@ -43,7 +50,7 @@ const updateProfile = async (req, res) => {
                 class: user.class,
                 school: user.school,
                 profile_pic: user.profile_pic,
-                parentId: user.parentId
+                parentname: user.parentname
             }
         });
     } catch (error) {
@@ -51,6 +58,6 @@ const updateProfile = async (req, res) => {
     }
 };
 
-module.exports ={
+module.exports = {
     updateProfile,
-}
+};

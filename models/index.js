@@ -19,13 +19,13 @@ const User = require("./userModel")(sequelize);
 const Parent = require("./parentModel")(sequelize);
 
 Parent.hasMany(User, {
-    foreignKey: "parentname",
-    onDelete: "CASCADE"
+    foreignKey: "parentemail",
+    onDelete: "SET NULL"
 });
 
 User.belongsTo(Parent, {
-    foreignKey: "parentname",
-    onDelete: "CASCADE"
+    foreignKey: "parentemail",
+    onDelete: "SET NULL"
 });
 
 module.exports = { sequelize, User, Parent };

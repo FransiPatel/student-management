@@ -5,26 +5,28 @@ require("dotenv").config();
 // Student Registration
 const registerStudent = async (req, res) => {
     try {
-        const { email, name, password, class: userClass, school, parentname } = req.body;
+        const { email, name, password, class: userClass, school, parentname, parentemail, parentphone } = req.body;
 
         // Validate input
-        if (!email || !name || !password || !userClass || !parentname) {
-            return res.status(400).json({ message: "Email, name, class, password, and parentId are required" });
+        if (!email || !name || !password || !userClass || !parentemail) {
+            return res.status(400).json({ message: "Email, name, class, password, and parentname are required" });
         }
-        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-            return res.status(400).json({ message: "email format is not valid" });
-        }
-
-        // Check if parent exists
-        const parent = await Parent.findByPk(parentname);
-        if (!parent) {
-            return res.status(404).json({ message: "Parent not found" });
-        }
-
         // Check if student already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(409).json({ message: "Student already registered" });
+        }
+
+        let parent = await Parent.findByPk(parentemail);
+        if (!parent) {
+            if (!parentname || !parentphone) {
+                return res.status(400).json({ message: "Parent does not exist. Please provide parentname and parentPhone to create one." });
+            }
+            parent = await Parent.create({
+                parentemail,
+                parentname: parentname,
+                phone: parentphone
+            });
         }
 
         // Hash password
@@ -41,7 +43,7 @@ const registerStudent = async (req, res) => {
             class: userClass,
             school: school || "Our School",
             profile_pic: profilePicPath,
-            parentname,
+            parentemail,
         });
 
         return res.status(201).json({
@@ -52,7 +54,7 @@ const registerStudent = async (req, res) => {
                 class: newUser.class, 
                 school: newUser.school, 
                 profile_pic: newUser.profile_pic, 
-                parentname: newUser.parentname
+                parentemail: newUser.parentemail
             }
         });
     } catch (error) {

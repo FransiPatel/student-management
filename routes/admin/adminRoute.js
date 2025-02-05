@@ -28,8 +28,8 @@ router.get("/parents", adminAuth, getAllParents);
 // search parent by id
 router.get("/search-parent", adminAuth, searchParent);
 // update parent by id
-router.put("/update-parent/:parentname", adminAuth, updateParent);
+router.put("/update-parent/:parentemail", adminAuth, updateParent);
 // delete parent by id
-router.delete("/delete-parent/:parentname", adminAuth, deleteParent);
+router.delete("/delete-parent/:parentemail", adminAuth, deleteParent);
 
 module.exports = router;

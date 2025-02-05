@@ -12,9 +12,6 @@ const loginStudent = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
-        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-            return res.status(400).json({ message: "email format is not valid" });
-        }
 
         // Find student
         const student = await User.findOne({ where: { email } });

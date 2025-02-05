@@ -2,22 +2,22 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     const User =  sequelize.define("User", {
-        email: { type: DataTypes.STRING, primaryKey: true },
+        email: { type: DataTypes.STRING, primaryKey: true, validate: { isEmail: true }},
         name: { type: DataTypes.STRING, allowNull: false },
         password: { type: DataTypes.STRING, allowNull: false },
         class: { type: DataTypes.STRING, allowNull: false },
         school: { type: DataTypes.STRING, defaultValue: "Our School" },
         profile_pic: { type: DataTypes.STRING },
-        parentname: { 
+        parentemail: { 
             type: DataTypes.STRING, 
             allowNull: false, 
-            references: { model: "Parents", key: "parentname" },
+            references: { model: "Parents", key: "parentemail" },
             onDelete: "CASCADE" 
         }
     });
 
     User.associate = (models) => {
-        User.belongsTo(models.Parent, { foreignKey: "parentname", onDelete: "CASCADE" });
+        User.belongsTo(models.Parent, { foreignKey: "parentemail", onDelete: "CASCADE" });
       };
 
     return User;

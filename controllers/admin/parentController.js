@@ -4,24 +4,24 @@ const { Op } = require("sequelize");
 // Add Parent
 const addParent = async (req, res) => {
     try {
-        const { parentname, email, phone } = req.body;
+        const { parentname, parentemail, phone } = req.body;
 
-        if (!parentname || !email || !phone) {
+        if (!parentemail || !parentemail || !phone) {
             return res.status(400).json({ message: "Name, email, and phone are required" });
         }
 
         // Check if Parent already exists
-        const existingParent = await Parent.findOne({ where: { email } });
+        const existingParent = await Parent.findOne({ where: { parentemail } });
         if (existingParent) {
             return res.status(409).json({ message: "Parent already exists" });
         }
 
         // Create Parent
-        const newParent = await Parent.create({ parentname, email, phone });
+        const newParent = await Parent.create({ parentname, parentemail, phone });
 
         return res.status(201).json({
             message: "Parent added successfully",
-            parent: { parentname: newParent.name, email: newParent.email, phone: newParent.phone }
+            parent: { parentname: newParent.parentname, parentemail: newParent.parentemail, phone: newParent.phone }
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
@@ -32,7 +32,7 @@ const addParent = async (req, res) => {
 const getAllParents = async (req, res) => {
     try {
         const parents = await Parent.findAll({
-            attributes: ["parentname", "email", "phone"]
+            attributes: ["parentname", "parentemail", "phone"]
         });
 
         return res.status(200).json({ message: "Parents retrieved successfully", parents });
@@ -44,7 +44,7 @@ const getAllParents = async (req, res) => {
 // Search Parent by parentname
 const searchParent = async (req, res) => {
     try {
-        let { parentname, email, phone, page, limit } = req.query;
+        let { parentname, parentemail, phone, page, limit } = req.query;
 
         page = parseInt(page) || 1;
         limit = parseInt(limit) || 10;
@@ -52,13 +52,13 @@ const searchParent = async (req, res) => {
 
         const filters = {};
 
-        if (parentname) filters.name = { [Op.iLike]: `%${parentname}%` };
-        if (email) filters.email = { [Op.iLike]: `%${email}%` };
-        if (phone) filters.phone = phone;
+        if (parentname) filters.parentname = { [Op.iLike]: `%${parentname}%` };
+        if (parentemail) filters.parentemail = { [Op.iLike]: `%${parentemail}%` };
+        if (phone) filters.phone = { [Op.iLike]: `%${phone}%` }; // Allow partial match on phone number
 
         const parents = await Parent.findAll({
             where: filters,
-            attributes: ["id", "name", "email", "phone"],
+            attributes: ["parentname", "parentemail", "phone"],
             limit,
             offset,
             order: [["createdAt", "DESC"]]
@@ -85,11 +85,11 @@ const searchParent = async (req, res) => {
 // Update Parent
 const updateParent = async (req, res) => {
     try {
-        const { parentname } = req.params;
-        const { email, phone } = req.body;
+        const { parentemail } = req.params;
+        const { parentname, phone } = req.body;
 
         // Find Parent by parentname
-        const parent = await Parent.findByPk(parentname);
+        const parent = await Parent.findByPk(parentemail);
         if (!parent) {
             return res.status(404).json({ message: "Parent not found" });
         }
@@ -97,7 +97,7 @@ const updateParent = async (req, res) => {
         // Update Parent Details
         await parent.update({
             parentname: parentname || parent.parentname,
-            email: email || parent.email,
+            parentemail: parentemail || parent.parentemail,
             phone: phone || parent.phone
         });
 
@@ -110,10 +110,10 @@ const updateParent = async (req, res) => {
 // Delete Parent
 const deleteParent = async (req, res) => {
     try {
-        const { parentname } = req.params;
+        const { parentemail } = req.params;
 
-        // Find Parent by parentname
-        const parent = await Parent.findByPk(parentname);
+        // Find Parent by parentemail
+        const parent = await Parent.findByPk(parentemail);
         if (!parent) {
             return res.status(404).json({ message: "Parent not found" });
         }
