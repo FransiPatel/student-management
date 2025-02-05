@@ -1,9 +1,17 @@
+const fs = require("fs");
+const path = require("path");
 const { User, Parent } = require("../../models/index");
 
 const updateProfile = async (req, res) => {
     try {
         const { email } = req.params;
         const { name, class: userClass, school, parentemail } = req.body;
+
+        // Ensure user is authenticated
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized. Please log in." });
+        }
+
         // Ensure user can only update their own profile OR admin can update any profile
         if (req.user.email !== email && !req.user.isAdmin) {
             return res.status(403).json({ message: "Access denied. You can only update your own profile." });
@@ -15,18 +23,30 @@ const updateProfile = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Validate parentname if provided
+        // Validate parent if updating parentemail
         if (parentemail) {
-            let parent = await Parent.findByPk(parentemail);
+            const parent = await Parent.findByPk(parentemail);
             if (!parent) {
-                return res.status(400).json({ message: "Parent not found. Provide valid parentname." });
+                return res.status(400).json({ message: "Parent not found. Provide a valid parentemail." });
             }
         }
 
-        // Update profile picture if uploaded
+        // Handle profile picture update and deletion of old image
         let profilePicPath = user.profile_pic;
         if (req.file) {
-            profilePicPath = `uploads/profile_pics/${req.file.filename}`;
+            const newProfilePicPath = `uploads/${req.file.filename}`;
+
+            // Delete old profile picture if it exists
+            if (user.profile_pic) {
+                const oldImagePath = path.join(__dirname, "../../", user.profile_pic);
+                fs.unlink(oldImagePath, (err) => {
+                    if (err && err.code !== "ENOENT") {
+                        console.error("Error deleting old profile picture:", err);
+                    }
+                });
+            }
+
+            profilePicPath = newProfilePicPath;
         }
 
         // Update user details

@@ -28,7 +28,7 @@ const addUser = async (req, res) => {
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const profilePicPath = req.file ? `uploads/profile_pics/${req.file.filename}` : null;
+        const profilePicPath = req.file ? `uploads/${req.file.filename}` : null;
 
         // Create User
         const newUser = await User.create({
@@ -57,7 +57,7 @@ const getAllUsers = async (req, res) => {
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
             include: [{
                 model: Parent,
-                as: "Parents", // Match alias in associations
+                as: "Parents",
                 attributes: ["parentname", "parentemail", "phone"]
             }]
         });
@@ -86,7 +86,11 @@ const searchUser = async (req, res) => {
         const users = await User.findAll({
             where: filters,
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
-            include: { model: Parent, as: "Parents", attributes: ["parentname", "parentemail", "phone"] },
+            include: [{
+                model: Parent,
+                as: "Parents",
+                attributes: ["parentname", "parentemail", "phone"]
+            }],
             limit,
             offset,
             order: [["createdAt", "DESC"]]
@@ -129,9 +133,22 @@ const updateUser = async (req, res) => {
             }
         }
 
+        // Handle profile picture update and deletion of old image
         let profilePicPath = user.profile_pic;
         if (req.file) {
-            profilePicPath = `uploads/profile_pics/${req.file.filename}`;
+            const newProfilePicPath = `uploads/${req.file.filename}`;
+
+            // Delete old profile picture if it exists
+            if (user.profile_pic) {
+                const oldImagePath = path.join(__dirname, "../../", user.profile_pic);
+                fs.unlink(oldImagePath, (err) => {
+                    if (err && err.code !== "ENOENT") {
+                        console.error("Error deleting old profile picture:", err);
+                    }
+                });
+            }
+
+            profilePicPath = newProfilePicPath;
         }
 
         await user.update({
