@@ -11,6 +11,9 @@ const registerStudent = async (req, res) => {
         if (!email || !name || !password || !userClass || !parentname) {
             return res.status(400).json({ message: "Email, name, class, password, and parentId are required" });
         }
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ message: "email format is not valid" });
+        }
 
         // Check if parent exists
         const parent = await Parent.findByPk(parentname);

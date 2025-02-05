@@ -15,7 +15,7 @@ router.post("/add-user", adminAuth, upload, addUser);
 // list all users
 router.get("/users", adminAuth, getAllUsers);
 // search user by email
-router.get("/search-user/:email", adminAuth, searchUser);
+router.get("/search-user", adminAuth, searchUser);
 // update existing user by email
 router.put("/update-user/:email", adminAuth, upload, updateUser);
 // delete existing user by email
@@ -26,7 +26,7 @@ router.post("/add-parent", adminAuth, addParent);
 // list parent
 router.get("/parents", adminAuth, getAllParents);
 // search parent by id
-router.get("/search-parent/:parentname", adminAuth, searchParent);
+router.get("/search-parent", adminAuth, searchParent);
 // update parent by id
 router.put("/update-parent/:parentname", adminAuth, updateParent);
 // delete parent by id

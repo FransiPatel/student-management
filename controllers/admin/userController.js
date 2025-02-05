@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { User, Parent } = require("../../models/index");
+const { Op } = require("sequelize");
 
 // Add User
 const addUser = async (req, res) => {
@@ -8,6 +9,9 @@ const addUser = async (req, res) => {
 
         if (!email || !name || !password || !userClass || !parentname) {
             return res.status(400).json({ message: "Email, name, class, password, and parentname are required" });
+        }
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ message: "email format is not valid" });
         }
 
         // Check if the parent exists
@@ -72,22 +76,42 @@ const getAllUsers = async (req, res) => {
 // Get User by Email
 const searchUser = async (req, res) => {
     try {
-        const { email } = req.params;
+        let { email, name, class: userClass, school, parentId, page, limit } = req.query;
 
-        if (!email) {
-            return res.status(400).json({ message: "Email is required" });
-        }
+        page = parseInt(page) || 1;
+        limit = parseInt(limit) || 10;
+        const offset = (page - 1) * limit;
 
-        const user = await User.findOne({
-            where: { email },
-            attributes: ["email", "name", "class", "school", "profile_pic", "parentname"],
-            include: { model: Parent, attributes: ["id", "name", "email", "phone"] }
+        const filters = {};
+
+        if (email) filters.email = { [Op.iLike]: `%${email}%` };
+        if (name) filters.name = { [Op.iLike]: `%${name}%` };
+        if (userClass) filters.class = userClass;
+        if (school) filters.school = { [Op.iLike]: `%${school}%` };
+        if (parentId) filters.parentId = parentId;
+
+        const users = await User.findAll({
+            where: filters,
+            attributes: ["email", "name", "class", "school", "profile_pic", "parentId"],
+            include: { model: Parent, attributes: ["id", "name", "email", "phone"] },
+            limit,
+            offset,
+            order: [["createdAt", "DESC"]]
         });
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const totalUsers = await User.count({ where: filters });
+
+        if (!users.length) {
+            return res.status(404).json({ message: "No users found" });
         }
-        return res.status(200).json({ message: "User found", user });
+
+        return res.status(200).json({
+            message: "Users retrieved successfully",
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / limit),
+            currentPage: page,
+            users
+        });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }

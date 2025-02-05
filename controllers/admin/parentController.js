@@ -1,4 +1,5 @@
 const { Parent } = require("../../models/index");
+const { Op } = require("sequelize");
 
 // Add Parent
 const addParent = async (req, res) => {
@@ -43,22 +44,39 @@ const getAllParents = async (req, res) => {
 // Search Parent by parentname
 const searchParent = async (req, res) => {
     try {
-        const { parentname } = req.params;
+        let { parentname, email, phone, page, limit } = req.query;
 
-        if (!parentname) {
-            return res.status(400).json({ message: "Parent name is required" });
-        }
+        page = parseInt(page) || 1;
+        limit = parseInt(limit) || 10;
+        const offset = (page - 1) * limit;
 
-        // Find Parent by parentname
-        const parent = await Parent.findByPk(parentname, {
-            attributes: ["parentname", "email", "phone"]
+        const filters = {};
+
+        if (parentname) filters.name = { [Op.iLike]: `%${parentname}%` };
+        if (email) filters.email = { [Op.iLike]: `%${email}%` };
+        if (phone) filters.phone = phone;
+
+        const parents = await Parent.findAll({
+            where: filters,
+            attributes: ["id", "name", "email", "phone"],
+            limit,
+            offset,
+            order: [["createdAt", "DESC"]]
         });
 
-        if (!parent) {
-            return res.status(404).json({ message: "Parent not found" });
+        const totalParents = await Parent.count({ where: filters });
+
+        if (!parents.length) {
+            return res.status(404).json({ message: "No parents found" });
         }
 
-        return res.status(200).json({ message: "Parent found", parent });
+        return res.status(200).json({
+            message: "Parents retrieved successfully",
+            totalParents,
+            totalPages: Math.ceil(totalParents / limit),
+            currentPage: page,
+            parents
+        });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }

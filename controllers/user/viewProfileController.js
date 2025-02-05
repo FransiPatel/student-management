@@ -4,6 +4,9 @@ const { User, Parent } = require("../../models/index");
 const viewProfile = async (req, res) => {
     try {
         const { email } = req.params;
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ message: "email format is not valid" });
+        }
 
         // Find user by email
         const user = await User.findOne({
