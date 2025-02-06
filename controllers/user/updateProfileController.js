@@ -25,7 +25,7 @@ const updateProfile = async (req, res) => {
 
         // Validate parent if updating parentemail
         if (parentemail) {
-            const parent = await Parent.findByPk(parentemail);
+            const parent = await Parent.findByPk(parentemail); // Using parentemail as primary key for lookup
             if (!parent) {
                 return res.status(400).json({ message: "Parent not found. Provide a valid parentemail." });
             }

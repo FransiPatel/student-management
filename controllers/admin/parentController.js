@@ -6,7 +6,7 @@ const addParent = async (req, res) => {
     try {
         const { parentname, parentemail, phone } = req.body;
 
-        if (!parentemail || !parentemail || !phone) {
+        if (!parentname || !parentemail || !phone) {
             return res.status(400).json({ message: "Name, email, and phone are required" });
         }
 
@@ -21,7 +21,12 @@ const addParent = async (req, res) => {
 
         return res.status(201).json({
             message: "Parent added successfully",
-            parent: { parentname: newParent.parentname, parentemail: newParent.parentemail, phone: newParent.phone }
+            parent: {
+                id: newParent.id, // Now includes id
+                parentname: newParent.parentname,
+                parentemail: newParent.parentemail,
+                phone: newParent.phone
+            }
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
@@ -32,7 +37,7 @@ const addParent = async (req, res) => {
 const getAllParents = async (req, res) => {
     try {
         const parents = await Parent.findAll({
-            attributes: ["parentname", "parentemail", "phone"]
+            attributes: ["id", "parentname", "parentemail", "phone"] // Include the id in the response
         });
 
         return res.status(200).json({ message: "Parents retrieved successfully", parents });
@@ -58,7 +63,7 @@ const searchParent = async (req, res) => {
 
         const parents = await Parent.findAll({
             where: filters,
-            attributes: ["parentname", "parentemail", "phone"],
+            attributes: ["id", "parentname", "parentemail", "phone"], // Include id in the response
             limit,
             offset,
             order: [["createdAt", "DESC"]]
@@ -85,11 +90,11 @@ const searchParent = async (req, res) => {
 // Update Parent
 const updateParent = async (req, res) => {
     try {
-        const { parentemail } = req.params;
+        const { id } = req.params;  // Update to use `id` as primary key
         const { parentname, phone } = req.body;
 
-        // Find Parent by parentname
-        const parent = await Parent.findByPk(parentemail);
+        // Find Parent by id
+        const parent = await Parent.findByPk(id);
         if (!parent) {
             return res.status(404).json({ message: "Parent not found" });
         }
@@ -97,7 +102,6 @@ const updateParent = async (req, res) => {
         // Update Parent Details
         await parent.update({
             parentname: parentname || parent.parentname,
-            parentemail: parentemail || parent.parentemail,
             phone: phone || parent.phone
         });
 
@@ -110,10 +114,10 @@ const updateParent = async (req, res) => {
 // Delete Parent
 const deleteParent = async (req, res) => {
     try {
-        const { parentemail } = req.params;
+        const { id } = req.params;  // Update to use `id` as primary key
 
-        // Find Parent by parentemail
-        const parent = await Parent.findByPk(parentemail);
+        // Find Parent by id
+        const parent = await Parent.findByPk(id);
         if (!parent) {
             return res.status(404).json({ message: "Parent not found" });
         }

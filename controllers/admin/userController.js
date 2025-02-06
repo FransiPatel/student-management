@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const { User, Parent } = require("../../models/index");
 const { Op } = require("sequelize");
+const path = require("path");
+const fs = require("fs");
 
 // Add User
 const addUser = async (req, res) => {
@@ -18,7 +20,7 @@ const addUser = async (req, res) => {
         }
 
         // Check if the parent exists, if not, create one
-        let parent = await Parent.findByPk(parentemail);
+        let parent = await Parent.findByPk(parentemail); // Use id (primary key) for lookup
         if (!parent) {
             if (!parentname || !phone) {
                 return res.status(400).json({ message: "Parent does not exist. Please provide parentname and phone to create one." });
@@ -43,13 +45,21 @@ const addUser = async (req, res) => {
 
         return res.status(201).json({
             message: "User added successfully",
-            user: { email: newUser.email, name: newUser.name, class: newUser.class, school: newUser.school, profile_pic: newUser.profile_pic, parentemail: newUser.parentemail },
+            user: {
+                email: newUser.email,
+                name: newUser.name,
+                class: newUser.class,
+                school: newUser.school,
+                profile_pic: newUser.profile_pic,
+                parentemail: newUser.parentemail
+            },
             parent
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 // Get All Users
 const getAllUsers = async (req, res) => {
     try {
@@ -67,6 +77,7 @@ const getAllUsers = async (req, res) => {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 // Get User by Email
 const searchUser = async (req, res) => {
     try {
@@ -127,7 +138,7 @@ const updateUser = async (req, res) => {
 
         // Validate if parentemail exists
         if (parentemail) {
-            const parent = await Parent.findByPk(parentemail);
+            const parent = await Parent.findByPk(parentemail); // Use id (primary key) for lookup
             if (!parent) {
                 return res.status(404).json({ message: "Parent not found" });
             }
@@ -165,7 +176,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-// Delete User
 // Delete User
 const deleteUser = async (req, res) => {
     try {

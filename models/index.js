@@ -19,7 +19,7 @@ const User = require("./userModel")(sequelize);
 const Parent = require("./parentModel")(sequelize);
 
 // Define Associations
-User.belongsTo(Parent, { foreignKey: "parentemail", as: "Parents", onDelete: "SET NULL" });
-Parent.hasMany(User, { foreignKey: "parentemail", as: "Users" });
+User.belongsTo(Parent, { foreignKey: "parentid", as: "Parents", onDelete: "SET NULL" });
+Parent.hasMany(User, { foreignKey: "parentid", as: "Users" });
 
 module.exports = { sequelize, User, Parent };

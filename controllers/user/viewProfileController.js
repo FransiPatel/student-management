@@ -3,16 +3,16 @@ const { User, Parent } = require("../../models/index");
 // Get User Profile API
 const viewProfile = async (req, res) => {
     try {
-        const { email } = req.params;
+        const { id } = req.params; // Using 'id' instead of 'email'
 
         // Ensure user can only view their own profile unless they are an admin
-        if (req.user.email !== email && !req.user.isAdmin) {
-            return res.status(403).json({ message: "Access denied. You can only update your own profile." });
+        if (req.user.id !== parseInt(id) && !req.user.isAdmin) {
+            return res.status(403).json({ message: "Access denied. You can only view your own profile." });
         }
 
-        // Find user by email
+        // Find user by id
         const user = await User.findOne({
-            where: { email },
+            where: { id },
             attributes: ["email", "name", "class", "school", "profile_pic", "parentemail"],
             include: [{
                 model: Parent,
