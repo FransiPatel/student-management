@@ -1,24 +1,29 @@
 const { DataTypes } = require("sequelize");
+const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
     const Parent = sequelize.define("Parent", {
         id: { 
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true,
+            defaultValue: uuidv4,
         },
         parentname: { type: DataTypes.STRING, allowNull: false },
         parentemail: { 
             type: DataTypes.STRING, 
-            unique: true,  // Email should still be unique, but it's not the primary key
+            unique: true,  
             allowNull: false, 
             validate: { isEmail: true }
         },
         phone: { type: DataTypes.STRING, allowNull: false },
+    }, {
+        tableName: "Parents",
+        timestamps: true,
+        paranoid: true, 
     });
 
     Parent.associate = (models) => {
-        Parent.hasMany(models.User, { foreignKey: "parentid", as: "Users" });
+        Parent.hasMany(models.User, { foreignKey: "parentid", as: "Users", onDelete: "CASCADE" });
     };
 
     return Parent;

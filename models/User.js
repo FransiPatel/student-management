@@ -1,15 +1,16 @@
 const { DataTypes } = require("sequelize");
+const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
     const User = sequelize.define("User", {
-        id: { // New id column as primary key
-            type: DataTypes.INTEGER,
+        id: { 
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true,
+            defaultValue: uuidv4, 
         },
         email: { 
             type: DataTypes.STRING, 
-            unique: true,  // Email should still be unique, but it's not the primary key
+            unique: true,  
             allowNull: false, 
             validate: { isEmail: true }
         },
@@ -19,15 +20,19 @@ module.exports = (sequelize) => {
         school: { type: DataTypes.STRING, defaultValue: "Our School" },
         profile_pic: { type: DataTypes.STRING },
         parentid: { 
-            type: DataTypes.STRING, 
-            allowNull: false,
+            type: DataTypes.UUID,  
+            allowNull: false,  
             references: { model: "Parents", key: "id" },
-            onDelete: "SET NULL"
+            onDelete: "CASCADE" 
         }
+    }, {
+        tableName: "Users",  
+        timestamps: true,     
+        paranoid: true,       
     });
 
     User.associate = (models) => {
-        User.belongsTo(models.Parent, { foreignKey: "parentid", as: "Parents", onDelete: "SET NULL" });
+        User.belongsTo(models.Parent, { foreignKey: "parentid", as: "Parent", onDelete: "CASCADE" });
     };
 
     return User;

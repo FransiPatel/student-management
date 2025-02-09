@@ -15,11 +15,11 @@ const sequelize = new Sequelize(
 );
 
 // Import models
-const User = require("./userModel")(sequelize);
-const Parent = require("./parentModel")(sequelize);
+const User = require("./User")(sequelize);
+const Parent = require("./Parent")(sequelize);
 
 // Define Associations
-User.belongsTo(Parent, { foreignKey: "parentid", as: "Parents", onDelete: "SET NULL" });
-Parent.hasMany(User, { foreignKey: "parentid", as: "Users" });
+User.belongsTo(Parent, { foreignKey: "parentid", as: "Parent", onDelete: "CASCADE" });
+Parent.hasMany(User, { foreignKey: "parentid", as: "Users", onDelete: "CASCADE" });
 
 module.exports = { sequelize, User, Parent };
