@@ -7,13 +7,20 @@ const authenticateUser = (req, res, next) => {
             return res.status(401).json({ message: "No token, authorization denied" });
         }
 
+        // Verify and decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // Use decoded.id as the email
+
+        // Ensure token contains 'id'
         if (!decoded.id) {
             return res.status(401).json({ message: "Invalid token payload" });
         }
 
-        req.user = { email: decoded.id, name: decoded.name }; // Map id -> email
+        req.user = { 
+            id: decoded.id, 
+            name: decoded.name, 
+            parentid: decoded.parentid
+        };
+
         next();
     } catch (error) {
         return res.status(498).json({ message: "Token is not valid" });

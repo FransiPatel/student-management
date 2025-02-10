@@ -1,35 +1,43 @@
 const { Parent } = require("../../models/index");
 const { Op } = require("sequelize");
+const { v4: uuidv4 } = require("uuid");
+const { parentValidation, updateParentValidation } = require("../../validations/parentValidation");
 
-// Add Parent
 const addParent = async (req, res) => {
     try {
         const { parentname, parentemail, phone } = req.body;
 
-        if (!parentname || !parentemail || !phone) {
-            return res.status(400).json({ message: "Name, email, and phone are required" });
+        // Validate input using ValidatorJS
+        const validation = parentValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ message: validation.errors.all() });
         }
 
         // Check if Parent already exists
         const existingParent = await Parent.findOne({ where: { parentemail } });
         if (existingParent) {
-            return res.status(409).json({ message: "Parent already exists" });
+            return res.status(400).json({ message: "Parent already exists" });
         }
 
-        // Create Parent
-        const newParent = await Parent.create({ parentname, parentemail, phone });
+        // Create Parent with UUID
+        const newParent = await Parent.create({
+            parentid: uuidv4(),
+            parentname,
+            parentemail,
+            phone
+        });
 
         return res.status(201).json({
             message: "Parent added successfully",
             parent: {
-                id: newParent.id, // Now includes id
+                parentid: newParent.parentid,
                 parentname: newParent.parentname,
                 parentemail: newParent.parentemail,
                 phone: newParent.phone
             }
         });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -37,16 +45,16 @@ const addParent = async (req, res) => {
 const getAllParents = async (req, res) => {
     try {
         const parents = await Parent.findAll({
-            attributes: ["id", "parentname", "parentemail", "phone"] // Include the id in the response
+            attributes: ["parentid", "parentname", "parentemail", "phone"]
         });
 
         return res.status(200).json({ message: "Parents retrieved successfully", parents });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
-// Search Parent by parentname
+// Search Parent
 const searchParent = async (req, res) => {
     try {
         let { parentname, parentemail, phone, page, limit } = req.query;
@@ -56,47 +64,47 @@ const searchParent = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const filters = {};
-
         if (parentname) filters.parentname = { [Op.iLike]: `%${parentname}%` };
         if (parentemail) filters.parentemail = { [Op.iLike]: `%${parentemail}%` };
-        if (phone) filters.phone = { [Op.iLike]: `%${phone}%` }; // Allow partial match on phone number
+        if (phone) filters.phone = { [Op.iLike]: `%${phone}%` };
 
         const parents = await Parent.findAll({
             where: filters,
-            attributes: ["id", "parentname", "parentemail", "phone"], // Include id in the response
+            attributes: ["parentid", "parentname", "parentemail", "phone"],
             limit,
             offset,
             order: [["createdAt", "DESC"]]
         });
 
-        const totalParents = await Parent.count({ where: filters });
-
         if (!parents.length) {
-            return res.status(404).json({ message: "No parents found" });
+            return res.status(400).json({ message: "No parents found" });
         }
 
         return res.status(200).json({
             message: "Parents retrieved successfully",
-            totalParents,
-            totalPages: Math.ceil(totalParents / limit),
-            currentPage: page,
             parents
         });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
 // Update Parent
 const updateParent = async (req, res) => {
     try {
-        const { id } = req.params;  // Update to use `id` as primary key
+        const { parentid } = req.params;
         const { parentname, phone } = req.body;
 
-        // Find Parent by id
-        const parent = await Parent.findByPk(id);
+        // Validate input using ValidatorJS
+        const validation = updateParentValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ message: validation.errors.all() });
+        }
+
+        // Find Parent by parentid
+        const parent = await Parent.findByPk(parentid);
         if (!parent) {
-            return res.status(404).json({ message: "Parent not found" });
+            return res.status(400).json({ message: "Parent not found" });
         }
 
         // Update Parent Details
@@ -107,28 +115,28 @@ const updateParent = async (req, res) => {
 
         return res.status(200).json({ message: "Parent updated successfully", parent });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
-// Delete Parent
+
+// Soft Delete Parent
 const deleteParent = async (req, res) => {
     try {
-        const { id } = req.params;  // Update to use `id` as primary key
+        const { parentid } = req.params;
 
-        // Find Parent by id
-        const parent = await Parent.findByPk(id);
-        if (!parent) {
-            return res.status(404).json({ message: "Parent not found" });
+        // Find Parent by parentid
+        const parent = await Parent.findByPk(parentid);
+        if (!parent || parent.isDeleted) {
+            return res.status(400).json({ message: "Parent not found" });
         }
 
-        // Delete Parent (Will also delete associated User due to CASCADE)
-        await parent.destroy();
+        // Soft delete the Parent
+        await parent.update({ isDeleted: true });
 
-        return res.status(200).json({ message: "Parent deleted successfully" });
+        return res.status(200).json({ message: "Parent deleted successfully (soft delete)" });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
 module.exports = { addParent, getAllParents, searchParent, updateParent, deleteParent };

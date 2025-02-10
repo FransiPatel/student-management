@@ -24,11 +24,15 @@ module.exports = (sequelize) => {
             allowNull: false,  
             references: { model: "Parents", key: "id" },
             onDelete: "CASCADE" 
-        }
+        },
+         // Soft Delete Flag
+         isDeleted: { 
+            type: DataTypes.BOOLEAN, 
+            defaultValue: false, 
+        },
     }, {
         tableName: "Users",  
         timestamps: true,     
-        paranoid: true,       
     });
 
     User.associate = (models) => {

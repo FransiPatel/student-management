@@ -5,28 +5,23 @@ require("dotenv").config();
 // Student Registration
 const registerStudent = async (req, res) => {
     try {
-        const { email, name, password, class: userClass, school, parentname, parentemail, parentphone } = req.body;
+        const { email, name, password, class: userClass, school, parentid } = req.body;
 
         // Validate input
-        if (!email || !name || !password || !userClass || !parentemail) {
-            return res.status(400).json({ message: "Email, name, class, password, and parentemail are required" });
+        if (!email || !name || !password || !userClass || !parentid) {
+            return res.status(400).json({ message: "Email, name, class, password, and parentid are required" });
         }
+
         // Check if student already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(409).json({ message: "Student already registered" });
+            return res.status(400).json({ message: "Student already registered" });
         }
 
-        let parent = await Parent.findByPk(parentemail);
+        // Validate if parent exists
+        const parent = await Parent.findByPk(parentid);
         if (!parent) {
-            if (!parentname || !parentphone) {
-                return res.status(400).json({ message: "Parent does not exist. Please provide parentname and parentPhone to create one." });
-            }
-            parent = await Parent.create({
-                parentemail,
-                parentname: parentname,
-                phone: parentphone
-            });
+            return res.status(400).json({ message: "Parent not found. Please provide a valid parentid." });
         }
 
         // Hash password
@@ -43,22 +38,15 @@ const registerStudent = async (req, res) => {
             class: userClass,
             school: school || "Our School",
             profile_pic: profilePicPath,
-            parentemail,
+            parentid
         });
 
         return res.status(201).json({
             message: "Student registered successfully",
-            user: { 
-                email: newUser.email, 
-                name: newUser.name, 
-                class: newUser.class, 
-                school: newUser.school, 
-                profile_pic: newUser.profile_pic, 
-                parentemail: newUser.parentemail
-            }
+            newUser,
         });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 

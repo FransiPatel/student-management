@@ -16,10 +16,16 @@ module.exports = (sequelize) => {
             validate: { isEmail: true }
         },
         phone: { type: DataTypes.STRING, allowNull: false },
+
+        // Soft Delete Flag
+        isDeleted: { 
+            type: DataTypes.BOOLEAN, 
+            defaultValue: false, 
+        },
+
     }, {
         tableName: "Parents",
-        timestamps: true,
-        paranoid: true, 
+        timestamps: true,  
     });
 
     Parent.associate = (models) => {

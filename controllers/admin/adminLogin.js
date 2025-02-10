@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { redisClient, admin, jwtSecret, jwtExpiry } = require("../../config/config"); 
+const { adminLoginValidation } = require("../../validations/adminValidation");
 
 // Admin Login API
 const adminLogin = async (req, res) => {
@@ -8,26 +9,20 @@ const adminLogin = async (req, res) => {
         let { email, password } = req.body;
 
         // Validate input
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+        const validation = adminLoginValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ message: validation.errors.all() });
         }
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({ message: "Invalid email format" });
-        }
-        email = validator.trim(email);
-        password = validator.trim(password);
 
         // Validate admin credentials
         if (email !== admin.email || password !== admin.password) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res.status(400).json({ message: "Invalid email or password" });
         }
 
         // Generate JWT Token
-        const token = jwt.sign({ email, role: "admin" }, jwtSecret, {
-            expiresIn: jwtExpiry,
-        });
+        const token = jwt.sign({ email, role: "admin" }, jwtSecret, { expiresIn: jwtExpiry });
 
-        // Store token in Redis
+        // Store token in Redis (expires in 1 hour)
         await redisClient.set(`admin:${email}`, token, "EX", 3600);
 
         return res.status(200).json({
@@ -62,7 +57,7 @@ const adminLogout = async (req, res) => {
         // Check if token exists in Redis
         const storedToken = await redisClient.get(`admin:${email}`);
         if (!storedToken) {
-            return res.status(440).json({ message: "Already logged out or session expired" });
+            return res.status(401).json({ message: "Already logged out or session expired" });
         }
 
         // Remove token from Redis (logout)

@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { User } = require("../../models/index");
+const { validateLogin } = require("../../validations/userValidation"); // Import validation
 require("dotenv").config();
 
 // Student Login
@@ -9,11 +10,12 @@ const loginStudent = async (req, res) => {
         const { email, password } = req.body;
 
         // Validate input
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+        const validation = validateLogin(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ message: validation.errors.all() });
         }
 
-        // Find student
+        // Find student by email
         const student = await User.findOne({ where: { email } });
         if (!student) {
             return res.status(401).json({ message: "Invalid email or password" });
@@ -25,11 +27,11 @@ const loginStudent = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // Generate JWT token
+        // Generate JWT token using id instead of email
         const token = jwt.sign(
-            { id: student.email, name: student.name, parentemail: student.parentemail },
+            { id: student.id, name: student.name, parentid: student.parentid },
             process.env.JWT_SECRET,
-            { expiresIn: "1d" }
+            { expiresIn: "1h" }
         );
 
         return res.status(200).json({ message: "Login successful", token });

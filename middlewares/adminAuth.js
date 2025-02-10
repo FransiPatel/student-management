@@ -13,9 +13,9 @@ const adminAuth = async (req, res, next) => {
         // Corrected Redis key format
         const redisToken = await redisClient.get(`admin:${decoded.email}`);
         if (!redisToken || redisToken !== token) {
-            return res.status(440).json({ message: "Session expired. Please log in again." });
+            return res.status(401).json({ message: "Session expired. Please log in again." });
         }
-        req.admin = decoded; // Attach admin info to request
+        req.admin = decoded; 
         next();
     } catch (error) {
         res.status(498).json({ message: "Invalid token" });
