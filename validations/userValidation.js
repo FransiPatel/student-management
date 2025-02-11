@@ -4,10 +4,15 @@ const userValidation = (data) => {
     const rules = {
         email: "required|email",
         name: "required|string|min:3|max:50",
-        password: "required|string|min:6",
+        password: [
+            "required",
+            "string",
+            "min:6",
+            "regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$/"
+        ],
         class: "required|string|min:1|max:10",
         school: "string|max:100",
-        parentid: "required|string|uuid",
+        parentid: "required|string",
     };
 
     const messages = {
@@ -22,6 +27,7 @@ const userValidation = (data) => {
         "required.password": "Password is required",
         "string.password": "Password must be a string",
         "min.password": "Password must be at least 6 characters",
+        "regex.password": "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)",
 
         "required.class": "Class is required",
         "string.class": "Class must be a string",
@@ -44,7 +50,6 @@ const updateUserValidation = (data) => {
         name: "string|min:3|max:50",
         class: "string|min:1|max:10",
         school: "string|max:100",
-        parentid: "string|uuid",
     };
 
     const messages = {

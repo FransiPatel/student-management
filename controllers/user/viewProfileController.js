@@ -15,7 +15,7 @@ const viewProfile = async (req, res) => {
             include: [{
                 model: Parent,
                 as: "Parent",
-                attributes: ["parentid", "parentname", "parentemail", "phone"]
+                attributes: ["id", "parentname", "parentemail", "phone"]
             }]
         });
 
@@ -25,7 +25,7 @@ const viewProfile = async (req, res) => {
 
         return res.status(200).json({ message: "User profile fetched successfully", user });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 

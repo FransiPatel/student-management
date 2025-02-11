@@ -50,9 +50,21 @@ const updateProfile = async (req, res) => {
             profile_pic: profilePicPath,
         });
 
+        const data = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                class: user.class,
+                school: user.school,
+                profile_pic: user.profile_pic,
+                parentid: user.parentid,
+            }
+        };
+
         return res.status(200).json({
             message: "Profile updated successfully",
-            user,
+            data,
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error" });

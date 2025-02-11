@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
         id: { 
             type: DataTypes.UUID,
             primaryKey: true,
-            defaultValue: uuidv4, 
+            defaultValue: uuidv4,
         },
         email: { 
             type: DataTypes.STRING, 
@@ -25,7 +25,6 @@ module.exports = (sequelize) => {
             references: { model: "Parents", key: "id" },
             onDelete: "CASCADE" 
         },
-         // Soft Delete Flag
          isDeleted: { 
             type: DataTypes.BOOLEAN, 
             defaultValue: false, 

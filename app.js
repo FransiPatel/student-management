@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser=require('body-parser');
-const adminRoutes = require('./routes/admin/adminRoute');
-const userRoute = require('./routes/user/userRoute');
+const adminRoutes = require("./routes/admin");
+const userRoutes = require("./routes/user");
 
 require("dotenv").config();
 const { sequelize } = require("./models");
@@ -10,8 +10,12 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Admin Routes
 app.use("/admin", adminRoutes);
-app.use("/", userRoute);
+
+// User Routes
+app.use("/user", userRoutes);
+
 
 // Sync Database and Start Server
 const PORT = process.env.PORT || 3000;

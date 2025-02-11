@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const validator = require("validator");
 const { redisClient, admin, jwtSecret, jwtExpiry } = require("../../config/config"); 
 const { adminLoginValidation } = require("../../validations/adminValidation");
 
@@ -30,7 +29,6 @@ const adminLogin = async (req, res) => {
             token,
         });
     } catch (error) {
-        console.error("Login error:", error);
         return res.status(500).json({ message: "Server error" });
     }
 };
@@ -65,7 +63,6 @@ const adminLogout = async (req, res) => {
 
         return res.status(200).json({ message: "Admin logged out successfully" });
     } catch (error) {
-        console.error("Logout error:", error);
         return res.status(500).json({ message: "Server error" });
     }
 };

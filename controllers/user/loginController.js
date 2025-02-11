@@ -16,7 +16,7 @@ const loginStudent = async (req, res) => {
         }
 
         // Find student by email
-        const student = await User.findOne({ where: { email } });
+        const student = await User.findOne({ where: { email, isDeleted: false } });
         if (!student) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -36,7 +36,7 @@ const loginStudent = async (req, res) => {
 
         return res.status(200).json({ message: "Login successful", token });
     } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
