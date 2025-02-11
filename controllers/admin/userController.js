@@ -188,7 +188,7 @@ const deleteUser = async (req, res) => {
             return res.status(400).json({ message: "User not found" });
         }
 
-        // Count how many active (not soft-deleted) users are associated with this parent
+        // Count how many active users are associated with this parent
         const userCount = await User.count({ where: { parentid: user.parentid, isDeleted: false } });
 
         // Soft delete the user

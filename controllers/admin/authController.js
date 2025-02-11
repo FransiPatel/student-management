@@ -21,7 +21,7 @@ const adminLogin = async (req, res) => {
         // Generate JWT Token
         const token = jwt.sign({ email, role: "admin" }, jwtSecret, { expiresIn: jwtExpiry });
 
-        // Store token in Redis (expires in 1 hour)
+        // Store token in Redis
         await redisClient.set(`admin:${email}`, token, "EX", 3600);
 
         return res.status(200).json({

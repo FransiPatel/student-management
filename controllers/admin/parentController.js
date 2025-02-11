@@ -13,7 +13,7 @@ const addParent = async (req, res) => {
             return res.status(400).json({ message: "Validation failed", errors: validation.errors.all() });
         }
 
-        // Check if a parent with the same email exists (including soft-deleted parents)
+        // Check if a parent with the same email exists
         const existingParent = await Parent.findOne({ where: { parentemail } });
 
         if (existingParent) {
@@ -34,16 +34,16 @@ const addParent = async (req, res) => {
         });
         const data = {
             parent: {
-                parentid: parent.id,
-                parentname: parent.parentname,
-                parentemail: parent.parentemail,
-                phone: parent.phone,
+                parentid: newParent.id,
+                parentname: newParent.parentname,
+                parentemail: newParent.parentemail,
+                phone: newParent.phone,
             },
         };
 
         return res.status(201).json({
             message: "Parent added successfully",
-            data
+            data,
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error" });
