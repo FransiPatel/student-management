@@ -1,9 +1,9 @@
 const authController = require("./authController");
 const parentController = require("./parentController");
-const userController = require("./userController");
+const studentController = require("./studentController");
 
 module.exports = {
     authController,
     parentController,
-    userController,
+    studentController,
 };

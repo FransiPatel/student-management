@@ -3,19 +3,18 @@ const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
     const Parent = sequelize.define("Parent", {
-        id: { 
+        parentId: { 
             type: DataTypes.UUID,
             primaryKey: true,
             defaultValue: uuidv4,
         },
-        parentname: { type: DataTypes.STRING, allowNull: false },
-        parentemail: { 
+        parentName: { type: DataTypes.STRING, allowNull: false },
+        parentEmail: { 
             type: DataTypes.STRING, 
-            unique: true,  
             allowNull: false, 
             validate: { isEmail: true }
         },
-        phone: { type: DataTypes.STRING, allowNull: false },
+        parentPhone: { type: DataTypes.STRING, allowNull: false },
 
         // Soft Delete Flag
         isDeleted: { 
@@ -24,12 +23,12 @@ module.exports = (sequelize) => {
         },
 
     }, {
-        tableName: "Parents",
+        tableName: "Parent",
         timestamps: true,  
     });
 
     Parent.associate = (models) => {
-        Parent.hasMany(models.User, { foreignKey: "parentid", as: "Users", onDelete: "CASCADE" });
+        Parent.hasMany(models.Student, { foreignKey: "parentId", as: "Students", onDelete: "CASCADE" });
     };
 
     return Parent;

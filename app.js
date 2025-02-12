@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/admin", adminRoutes);
 
 // User Routes
-app.use("/user", userRoutes);
+app.use("/student", userRoutes);
 
 
 // Sync Database and Start Server

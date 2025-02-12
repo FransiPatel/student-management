@@ -15,10 +15,10 @@ const authenticateUser = (req, res, next) => {
             return res.status(401).json({ message: "Invalid token payload" });
         }
 
-        req.user = { 
+        req.student = { 
             id: decoded.id, 
             name: decoded.name, 
-            parentid: decoded.parentid
+            parentId: decoded.parentId
         };
 
         next();

@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
-    const User = sequelize.define("User", {
+    const Student = sequelize.define("Student", {
         id: { 
             type: DataTypes.UUID,
             primaryKey: true,
@@ -10,7 +10,6 @@ module.exports = (sequelize) => {
         },
         email: { 
             type: DataTypes.STRING, 
-            unique: true,  
             allowNull: false, 
             validate: { isEmail: true }
         },
@@ -18,11 +17,11 @@ module.exports = (sequelize) => {
         password: { type: DataTypes.STRING, allowNull: false },
         class: { type: DataTypes.STRING, allowNull: false },
         school: { type: DataTypes.STRING, defaultValue: "Our School" },
-        profile_pic: { type: DataTypes.STRING },
-        parentid: { 
+        profilePic: { type: DataTypes.STRING },
+        parentId: { 
             type: DataTypes.UUID,  
             allowNull: false,  
-            references: { model: "Parents", key: "id" },
+            references: { model: "Parent", key: "parentId" },
             onDelete: "CASCADE" 
         },
          isDeleted: { 
@@ -30,13 +29,13 @@ module.exports = (sequelize) => {
             defaultValue: false, 
         },
     }, {
-        tableName: "Users",  
+        tableName: "Student",  
         timestamps: true,     
     });
 
-    User.associate = (models) => {
-        User.belongsTo(models.Parent, { foreignKey: "parentid", as: "Parent", onDelete: "CASCADE" });
+    Student.associate = (models) => {
+        Student.belongsTo(models.Parent, { foreignKey: "parentId", as: "Parent", onDelete: "CASCADE" });
     };
 
-    return User;
+    return Student;
 };

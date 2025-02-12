@@ -1,11 +1,7 @@
-const loginController = require("./loginController");
-const registerController = require("./registerController");
-const updateProfileController = require("./updateProfileController");
-const viewProfileController = require("./viewProfileController");
+const authController = require("./authController");
+const studentController = require("./studentcontroller");
 
 module.exports = {
-    loginController,
-    registerController,
-    updateProfileController,
-    viewProfileController,
+    authController,
+    studentController,
 };

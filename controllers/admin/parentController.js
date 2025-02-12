@@ -1,11 +1,11 @@
-const { Parent, User } = require("../../models/index");
+const { Parent, Student } = require("../../models/index");
 const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 const { parentValidation, updateParentValidation } = require("../../validations/parentValidation");
 
 const addParent = async (req, res) => {
     try {
-        const { parentname, parentemail, phone } = req.body;
+        const { parentName, parentEmail, parentPhone } = req.body;
 
         // Validate input
         const validation = parentValidation(req.body);
@@ -14,30 +14,25 @@ const addParent = async (req, res) => {
         }
 
         // Check if a parent with the same email exists
-        const existingParent = await Parent.findOne({ where: { parentemail } });
+        const existingParent = await Parent.findOne({ where: { parentEmail, isDeleted: false } });
 
         if (existingParent) {
-            if (!existingParent.isDeleted) {
-                return res.status(400).json({ message: "Parent already exists with this email." });
-            } else {
-                // If the parent exists but is soft-deleted, send an error
-                return res.status(400).json({ message: "This email was used before and is soft deleted. Please use another email or contact support." });
-            }
+            return res.status(400).json({ message: "Parent already exists with this email." });
         }
 
         // Create new Parent
         const newParent = await Parent.create({
-            parentid: uuidv4(),
-            parentname,
-            parentemail,
-            phone,
+            parentId: uuidv4(),
+            parentName,
+            parentEmail,
+            parentPhone,
         });
         const data = {
             parent: {
-                parentid: newParent.id,
-                parentname: newParent.parentname,
-                parentemail: newParent.parentemail,
-                phone: newParent.phone,
+                parentId: newParent.parentId,
+                parentName: newParent.parentName,
+                parentEmail: newParent.parentEmail,
+                parentPhone: newParent.parentPhone,
             },
         };
 
@@ -53,17 +48,17 @@ const addParent = async (req, res) => {
 // Get All Parents & Search
 const getParents = async (req, res) => {
     try {
-        let { id, parentname, parentemail, phone, page, limit } = req.query;
+        let { parentId, parentName, parentEmail, parentPhone, page, limit } = req.query;
 
         page = parseInt(page) || 1;
         limit = parseInt(limit) || 10;
         const offset = (page - 1) * limit;
 
         const filters = { isDeleted: false };
-        if (id) filters.id = id;
-        if (parentname) filters.parentname = { [Op.iLike]: `%${parentname}%` };
-        if (parentemail) filters.parentemail = { [Op.iLike]: `%${parentemail}%` };
-        if (phone) filters.phone = { [Op.iLike]: `%${phone}%` };
+        if (parentId) filters.parentId = parentId;
+        if (parentName) filters.parentName = { [Op.iLike]: `%${parentName}%` };
+        if (parentEmail) filters.parentEmail = { [Op.iLike]: `%${parentEmail}%` };
+        if (parentPhone) filters.parentPhone = { [Op.iLike]: `%${parentPhone}%` };
 
         // Get total count
         const totalParents = await Parent.count({ where: filters });
@@ -71,7 +66,7 @@ const getParents = async (req, res) => {
         // Fetch parents with pagination
         const parents = await Parent.findAll({
             where: filters,
-            attributes: ["id", "parentname", "parentemail", "phone"],
+            attributes: ["parentId", "parentName", "parentEmail", "parentPhone"],
             limit,
             offset,
             order: [["createdAt", "DESC"]],
@@ -88,8 +83,8 @@ const getParents = async (req, res) => {
 // Update Parent
 const updateParent = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { parentemail, parentname, phone } = req.body;
+        const { parentId } = req.params;
+        const { parentEmail, parentName, parentPhone } = req.body;
 
         // Validate input
         const validation = updateParentValidation(req.body);
@@ -97,29 +92,38 @@ const updateParent = async (req, res) => {
             return res.status(400).json({ message: "Validation failed", data: validation.errors.all() });
         }
 
-        // Find Parent (Exclude Soft-Deleted)
-        const parent = await Parent.findOne({ where: { id, isDeleted: false } });
+        // Find Parent
+        const parent = await Parent.findOne({ where: { parentId, isDeleted: false } });
         if (!parent) {
             return res.status(400).json({ message: "Parent not found or deleted" });
         }
+        if(parentEmail) {
+            const existingEmail = await Parent.findOne({ where: { parentEmail, isDeleted: false } });
+            if (existingEmail) {
+                return res.status(400).json({ message: "Parent already exists with this email." });
+            }
+        }
+        
 
         // Update Parent
         await parent.update({
-            parentname: parentname || parent.parentname,
-            phone: phone || parent.phone,
+            parentName: parentName || parent.parentName,
+            parentPhone: parentPhone || parent.parentPhone,
+            parentEmail: parentEmail || parent.parentEmail,
         });
 
         const data = {
             parent: {
-                parentid: parent.id,
-                parentname: parent.parentname,
-                parentemail: parent.parentemail,
-                phone: parent.phone,
+                parentId: parent.parentId,
+                parentName: parent.parentName,
+                parentEmail: parent.parentEmail,
+                parentPhone: parent.parentPhone,
             },
         };
 
         return res.status(200).json({ message: "Parent updated successfully", data });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: "Server error" });
     }
 };
@@ -127,19 +131,19 @@ const updateParent = async (req, res) => {
 // Soft Delete Parent
 const deleteParent = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { parentId } = req.params;
 
         // Find Parent
-        const parent = await Parent.findOne({ where: { id, isDeleted: false } });
+        const parent = await Parent.findOne({ where: { parentId, isDeleted: false } });
         if (!parent) {
             return res.status(400).json({ message: "Parent not found or already deleted" });
         }
 
         // Soft delete the Parent
         await parent.update({ isDeleted: true });
-        await User.update({ isDeleted: true }, { where: { parentid:id } });
+        await Student.update({ isDeleted: true }, { where: { parentId } });
 
-        return res.status(200).json({ message: "Parent deleted successfully", id });
+        return res.status(200).json({ message: "Parent deleted successfully", parentId });
     } catch (error) {
         return res.status(500).json({ message: "Server error" });
     }
