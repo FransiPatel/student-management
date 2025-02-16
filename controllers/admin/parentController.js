@@ -135,9 +135,6 @@ const deleteParent = async (req, res) => {
 
         // Find Parent
         const parent = await Parent.findOne({ where: { parentId, isDeleted: false } });
-        if (!parent) {
-            return res.status(400).json({ message: "Parent not found or already deleted" });
-        }
 
         // Soft delete the Parent
         await parent.update({ isDeleted: true });

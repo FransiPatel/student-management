@@ -4,7 +4,7 @@ const upload = require("../../middlewares/multer");
 const { studentController } = require("../../controllers/user");
 const router = express.Router();
 
-// update existing user by email
+// update existing user
 router.put("/update", studentAuth, upload, studentController.updateProfile);
 
 // view user profile

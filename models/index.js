@@ -17,9 +17,19 @@ const sequelize = new Sequelize(
 // Import models
 const Student = require("./Student")(sequelize);
 const Parent = require("./Parent")(sequelize);
+const Subject = require("./Subject")(sequelize);
+const StudentGrades = require("./StudentGrade")(sequelize);
+const ClassSubject = require("./ClassSubject")(sequelize);
 
-// Define Associations
-Student.belongsTo(Parent, { foreignKey: "parentId", as: "Parent", onDelete: "CASCADE" });
-Parent.hasMany(Student, { foreignKey: "parentId", as: "Students", onDelete: "CASCADE" });
+// Define Associations (Handled inside models, no need to define here)
+const models = { Student, Parent, Subject, StudentGrades, ClassSubject };
 
-module.exports = { sequelize, Student, Parent };
+// Initialize associations
+Object.values(models).forEach((model) => {
+    if (model.associate) {
+        model.associate(models);
+    }
+});
+
+// Export models
+module.exports = { sequelize, ...models };

@@ -8,9 +8,9 @@ const router = express.Router();
 router.post("/add", adminAuth, upload, studentController.addStudent); 
 // list all student
 router.get("/students", adminAuth, studentController.getStudents);
-// update existing student by email
+// update existing student by id
 router.put("/update/:id", adminAuth, upload, studentController.updateStudent);
-// delete existing student by email
+// delete existing student by id
 router.delete("/delete/:id", adminAuth, studentController.deleteStudent);
 
 module.exports = router;

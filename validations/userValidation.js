@@ -20,6 +20,7 @@ const userValidation = (data) => {
 
 const updateUserValidation = (data) => {
     const rules = {
+        email: "string|email",
         name: "string|min:3|max:50",
         class: "string|min:1|max:10",
         school: "string|max:100",
@@ -30,7 +31,7 @@ const updateUserValidation = (data) => {
 const validateLogin = (data) => {
     const rules = {
         email: "required|email",
-        password: "required|min:6"
+        password: "required"
     };
 
     return new Validator(data, rules);
