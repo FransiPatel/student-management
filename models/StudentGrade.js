@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
-    const StudentGrades = sequelize.define("StudentGrades", {
+    const StudentGrade = sequelize.define("StudentGrade", {
         gradeId: {
             type: DataTypes.UUID,
             primaryKey: true,
@@ -37,10 +37,10 @@ module.exports = (sequelize) => {
         timestamps: true, 
     });
 
-    StudentGrades.associate = (models) => {
-        StudentGrades.belongsTo(models.Student, { foreignKey: "studentId", as: "Student", onDelete: "CASCADE" });
-        StudentGrades.belongsTo(models.Subject, { foreignKey: "subjectId", as: "Subject", onDelete: "CASCADE" });
+    StudentGrade.associate = (models) => {
+        StudentGrade.belongsTo(models.Student, { foreignKey: "studentId", as: "Student", onDelete: "CASCADE" });
+        StudentGrade.belongsTo(models.Subject, { foreignKey: "subjectId", as: "Subject", onDelete: "CASCADE" });
     };
 
-    return StudentGrades;
+    return StudentGrade;
 };

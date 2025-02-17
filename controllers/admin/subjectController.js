@@ -1,10 +1,15 @@
 const { Subject, Student, sequelize } = require("../../models/index");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
+const { addSubjectValidation, updateSubjectValidation, assignSubjectsValidation } = require("../../validations/subjectValidation");
 
 // Add Subject
 const addSubject = async (req, res) => {
     try {
+        const validation = addSubjectValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ errors: validation.errors.all() });
+        }
         const { subjectName } = req.body;
 
         if (!subjectName) {
@@ -21,16 +26,19 @@ const addSubject = async (req, res) => {
             subjectName,
         });
 
-        return res.status(201).json({ message: "Subject added successfully", subject: newSubject });
+        return res.status(201).json({ message: "Subject added successfully", newSubject });
     } catch (error) {
-        console.error("Error in addSubject:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
 // Update Subject
 const updateSubject = async (req, res) => {
     try {
+        const validation = updateSubjectValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ errors: validation.errors.all() });
+        }
         const { subjectId } = req.params;
         const { subjectName } = req.body;
 
@@ -43,8 +51,7 @@ const updateSubject = async (req, res) => {
 
         return res.status(200).json({ message: "Subject updated successfully", subject });
     } catch (error) {
-        console.error("Error in updateSubject:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -61,8 +68,7 @@ const deleteSubject = async (req, res) => {
 
         return res.status(200).json({ message: "Subject deleted successfully", subjectId });
     } catch (error) {
-        console.error("Error in deleteSubject:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -70,6 +76,10 @@ const deleteSubject = async (req, res) => {
 // Get Subject by ID
 const getSubjects = async (req, res) => {
     try {
+        const validation = assignSubjectsValidation(req.body);
+        if (validation.fails()) {
+            return res.status(400).json({ errors: validation.errors.all() });
+        }
         const { subjectId, name } = req.query;
 
         const filters = { isDeleted: false };
@@ -85,8 +95,7 @@ const getSubjects = async (req, res) => {
         }
         return res.status(200).json({ message: "Subjects retrieved successfully", data });
     } catch (error) {
-        console.error("Error in getSubjects:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -129,8 +138,7 @@ const assignSubjectsToClass = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error in assignSubjectsToClass:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 

@@ -15,13 +15,12 @@ const getStudentResult = async (req, res) => {
         );
 
         if (!results.length) {
-            return res.status(400).json({ message: "No results found for this student." });
+            return res.status(400).json({ message: "Result", results });
         }
 
         return res.status(200).json({ studentId, results });
     } catch (error) {
-        console.error("Error fetching student results:", error);
-        return res.status(500).json({ message: "Internal server error", error: error.message });
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 

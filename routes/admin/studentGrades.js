@@ -6,7 +6,7 @@ const router = express.Router();
 // add student grades
 router.post("/add", adminAuth, studentGradesController.addStudentGrade); 
 // list all student grades
-router.get("/grades", adminAuth, studentGradesController.getStudentGrades);
+router.get("/grades", adminAuth, studentGradesController.getStudentGrade);
 // update existing student grade by id
 router.put("/update/:gradeId", adminAuth, studentGradesController.updateStudentGrade);
 // delete existing student grade by id

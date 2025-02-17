@@ -18,11 +18,11 @@ const sequelize = new Sequelize(
 const Student = require("./Student")(sequelize);
 const Parent = require("./Parent")(sequelize);
 const Subject = require("./Subject")(sequelize);
-const StudentGrades = require("./StudentGrade")(sequelize);
+const StudentGrade = require("./StudentGrade")(sequelize);
 const ClassSubject = require("./ClassSubject")(sequelize);
 
 // Define Associations (Handled inside models, no need to define here)
-const models = { Student, Parent, Subject, StudentGrades, ClassSubject };
+const models = { Student, Parent, Subject, StudentGrade, ClassSubject };
 
 // Initialize associations
 Object.values(models).forEach((model) => {

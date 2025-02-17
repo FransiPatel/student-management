@@ -23,7 +23,7 @@ module.exports = (sequelize) => {
     });
 
     Subject.associate = (models) => {
-        Subject.hasMany(models.StudentGrades, { foreignKey: "subjectId", as: "Grades", onDelete: "CASCADE" });
+        Subject.hasMany(models.StudentGrade, { foreignKey: "subjectId", as: "Grades", onDelete: "CASCADE" });
     };
 
     return Subject;
